@@ -1,3 +1,14 @@
+import numpy as np
+import matplotlib
+# matplotlib.use('Agg')
+import matplotlib.pyplot as plt
+import os,shutil
+from tensorflow import keras
+from IPython.display import clear_output #clear_output(wait=True)
+# plt.style.use('dark_background')
+import pickle
+import tensorflow as tf
+from numpy.random import seed
 
 bs=10
 ep=200
