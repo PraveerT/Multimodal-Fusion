@@ -38,4 +38,4 @@ def CE(name,model):
     model.compile(loss='categorical_crossentropy',
         optimizer=tf.keras.optimizers.Adam(learning_rate=lr_schedule),
         metrics=METRICS)
-    return checpoint_cb,early_stopping_cb
+    return checkpoint_cb,early_stopping_cb
