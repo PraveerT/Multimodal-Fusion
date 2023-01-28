@@ -49,3 +49,21 @@ def build_model_3DCNN_with_F_ATT(input_shape,dropout):
 
 
     return keras.Model(inputs, x)
+
+def Merge(Model_A,Model_B,Model_C,lr_schedule):
+    merged = keras.layers.Concatenate(name="MERGE")([Model_A.output,Model_B.output,Model_C.output])
+    output = keras.layers.Flatten()(merged)
+    output = keras.layers.Dense(128, activation="relu",name="FD")(output)
+    output = keras.layers.Dropout(0.4)(output)
+    output = keras.layers.Dense(1024, activation="relu")(output)
+    output = keras.layers.Dropout(0.4)(output)
+    output = keras.layers.Dense(12, activation="softmax")(output)
+    
+    Mergemodel = keras.Model(inputs=[modelOptical.input, modelMpipe.input], outputs=output)
+# Mergemodel.summary()
+
+    Mergemodel.compile(loss='categorical_crossentropy',
+        optimizer=tf.keras.optimizers.Adam(learning_rate=lr_schedule),
+        metrics=METRICS)
+    
+    return Mergemodel
