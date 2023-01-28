@@ -67,3 +67,27 @@ def Merge(Model_A,Model_B,Model_C,lr_schedule,METRICS):
         metrics=METRICS)
     
     return Mergemodel
+
+def MergeAtt(Model_A,Model_B,Model_C,lr_schedule,METRICS):
+    merged = keras.layers.Concatenate(name="MERGE_ATT")([Model_A.output,Model_B.output,Model_C.output])
+    merged=keras.layers.Reshape((-1,12))(merged)
+    x=merged
+    for _ in range(4):
+        x = transformer_encoder_OA(x, 2048,16,16, 0.1)
+    output = keras.layers.Flatten()(x)
+    output = keras.layers.Dense(128, activation="relu",name="FD")(output)
+    output = keras.layers.Dropout(0.4)(output)
+    output = keras.layers.Dense(1024, activation="relu",name="ML3")(output)
+    output = keras.layers.Dropout(0.4)(output)
+    output = keras.layers.Dense(12, activation="softmax",name="ML4")(output)
+
+
+
+
+    MergeAttmodel = keras.Model(inputs=[Model_A.input,Model_B.input, Model_C.input], outputs=output)
+    # Mergemodel.summary()
+    MergeAttmodel.compile(loss='categorical_crossentropy',
+    optimizer=tf.keras.optimizers.Adam(learning_rate=lr_schedule),
+    metrics=METRICS)
+    
+    return MergeAttmodel
