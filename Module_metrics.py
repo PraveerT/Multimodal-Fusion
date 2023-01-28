@@ -28,13 +28,14 @@ METRICS = [
       keras.metrics.AUC(name='prc', curve='PR'), # precision-recall curve
 ]
 
+def(name,model):
+    checkpoint_cb = keras.callbacks.ModelCheckpoint(
+        f"{name}.h5", save_best_only=True
+    )
+    early_stopping_cb = keras.callbacks.EarlyStopping(monitor="val_categorical_accuracy", patience=100)
+    # model.summary()
 
-checkpoint_cb = keras.callbacks.ModelCheckpoint(
-    f"{name}.h5", save_best_only=True
-)
-early_stopping_cb = keras.callbacks.EarlyStopping(monitor="val_categorical_accuracy", patience=100)
-# model.summary()
-
-model.compile(loss='categorical_crossentropy',
-    optimizer=tf.keras.optimizers.Adam(learning_rate=lr_schedule),
-    metrics=METRICS)
+    model.compile(loss='categorical_crossentropy',
+        optimizer=tf.keras.optimizers.Adam(learning_rate=lr_schedule),
+        metrics=METRICS)
+    return checpoint_cb,early_stopping_cb
