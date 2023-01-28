@@ -18,7 +18,7 @@ def build_model_3DCNN(input_shape,dropout):
     return keras.Model(inputs, x)
   
   
-  def transformer_encoder_OA(inputs, head_size, num_heads, ff_dim, dropout=0):
+def transformer_encoder_OA(inputs, head_size, num_heads, ff_dim, dropout=0):
 
     x = keras.layers.LayerNormalization(epsilon=1e-6)(inputs)
     x = keras.layers.MultiHeadAttention(
