@@ -59,7 +59,7 @@ def Merge(Model_A,Model_B,Model_C,lr_schedule):
     output = keras.layers.Dropout(0.4)(output)
     output = keras.layers.Dense(12, activation="softmax")(output)
     
-    Mergemodel = keras.Model(inputs=[modelOptical.input, modelMpipe.input], outputs=output)
+    Mergemodel = keras.Model(inputs=[Model_A.input,Model_B.input, Model_C.input], outputs=output)
 # Mergemodel.summary()
 
     Mergemodel.compile(loss='categorical_crossentropy',
