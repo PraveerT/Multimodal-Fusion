@@ -28,7 +28,7 @@ METRICS = [
       keras.metrics.AUC(name='prc', curve='PR'), # precision-recall curve
 ]
 
-def(name,model):
+def CE(name,model):
     checkpoint_cb = keras.callbacks.ModelCheckpoint(
         f"{name}.h5", save_best_only=True
     )
