@@ -70,7 +70,8 @@ def Merge(Model_A,Model_B,Model_C,lr_schedule,METRICS):
 
 def MergeAtt(Model_A,Model_B,Model_C,lr_schedule,METRICS):
     merged = keras.layers.Concatenate(name="MERGE_ATT")([Model_A.output,Model_B.output,Model_C.output])
-    merged=keras.layers.Reshape((-1,merged.shape[2]))(merged)
+    print (merged.shape)
+    merged=keras.layers.Reshape((-1,merged.shape[1]))(merged)
     x=merged
     for _ in range(4):
         x = transformer_encoder_OA(x, 2048,16,16, 0.1)
