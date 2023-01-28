@@ -50,7 +50,7 @@ def build_model_3DCNN_with_F_ATT(input_shape,dropout):
 
     return keras.Model(inputs, x)
 
-def Merge(Model_A,Model_B,Model_C,lr_schedule):
+def Merge(Model_A,Model_B,Model_C,lr_schedule,METRICS):
     merged = keras.layers.Concatenate(name="MERGE")([Model_A.output,Model_B.output,Model_C.output])
     output = keras.layers.Flatten()(merged)
     output = keras.layers.Dense(128, activation="relu",name="FD")(output)
