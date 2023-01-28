@@ -11,7 +11,7 @@ import tensorflow as tf
 from numpy.random import seed
 
 
-def build_model_3DCNN_F(input_shape,dropout):
+def 3DCNN(input_shape,dropout):
     inputs = keras.layers.Input(shape=input_shape)
     x = inputs
     x = keras.layers.Conv3D(32, kernel_size=(3, 3, 3), activation='relu', kernel_initializer='he_uniform')(x)
@@ -33,7 +33,7 @@ def transformer_encoder_OA(inputs, head_size, num_heads, ff_dim, dropout=0):
     x = keras.layers.Dropout(dropout)(x)
     return x + inputs
 
-def build_model_3DCNN_with_F_ATT(input_shape,dropout):
+def 3DCNN_Attention(input_shape,dropout):
     inputs = keras.layers.Input(shape=input_shape)
     x = inputs
     x = keras.layers.Conv3D(32, kernel_size=(3, 3, 3), activation='relu', kernel_initializer='he_uniform')(x)
@@ -91,3 +91,47 @@ def MergeAtt(Model_A,Model_B,Model_C,lr_schedule,METRICS):
     metrics=METRICS)
     
     return MergeAttmodel
+
+
+
+def 3DCNN_Softmax(input_shape,dropout):
+    inputs = keras.layers.Input(shape=input_shape)
+    x = inputs
+    x = keras.layers.Conv3D(32, kernel_size=(3, 3, 3), activation='relu', kernel_initializer='he_uniform')(x)
+    x = keras.layers.MaxPooling3D(pool_size=(2, 2, 2))(x)
+    x = keras.layers.Conv3D(64, kernel_size=(3, 3, 3), activation='relu', kernel_initializer='he_uniform')(x)
+    x = keras.layers.MaxPooling3D(pool_size=(2, 2, 2))(x)
+    x = keras.layers.BatchNormalization()(x)
+    x = keras.layers.Conv3D(128, kernel_size=(3, 3, 3), activation='relu', kernel_initializer='he_uniform')(x)
+    x = keras.layers.MaxPooling3D(pool_size=(2, 2, 2))(x)
+    x = keras.layers.Reshape((-1,x.shape[-1]))(x)
+    for _ in range(4):
+        x = transformer_encoder_OA(x,2048,16,16, 0.1)
+    x = keras.layers.Flatten()(x)
+    x = keras.layers.Dense(128, activation="relu")(x)
+    x = keras.layers.Dropout(0.4)(x)
+    x = keras.layers.Dense(1024, activation="relu")(x)
+    x = keras.layers.Dropout(0.4)(x)
+    x = keras.layers.Dense(12, activation="softmax")(x)
+
+    return keras.Model(inputs, x)
+
+
+def 3DCNN_Softmax_Attention(input_shape,dropout):
+    inputs = keras.layers.Input(shape=input_shape)
+    x = inputs
+    x = keras.layers.Conv3D(32, kernel_size=(3, 3, 3), activation='relu', kernel_initializer='he_uniform')(x)
+    x = keras.layers.MaxPooling3D(pool_size=(2, 2, 2))(x)
+    x = keras.layers.Conv3D(64, kernel_size=(3, 3, 3), activation='relu', kernel_initializer='he_uniform')(x)
+    x = keras.layers.MaxPooling3D(pool_size=(2, 2, 2))(x)
+    x = keras.layers.BatchNormalization()(x)
+    x = keras.layers.Conv3D(128, kernel_size=(3, 3, 3), activation='relu', kernel_initializer='he_uniform')(x)
+    x = keras.layers.MaxPooling3D(pool_size=(2, 2, 2))(x)
+    x = keras.layers.Flatten()(x)
+    x = keras.layers.Dense(128, activation="relu")(x)
+    x = keras.layers.Dropout(0.4)(x)
+    x = keras.layers.Dense(1024, activation="relu")(x)
+    x = keras.layers.Dropout(0.4)(x)
+    x = keras.layers.Dense(12, activation="softmax")(x)
+
+    return keras.Model(inputs, x)
