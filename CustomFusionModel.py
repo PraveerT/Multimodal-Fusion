@@ -54,7 +54,7 @@ def B_Attention(input_shape,dropout):
     x = keras.layers.Reshape((-1,x.shape[-1]))(x)
     for _ in range(4):
         x = transformer_encoder(x, 2048,16,16, 0.1)    
-
+    return keras.Model(inputs, x)
 
 def C(input_shape,dropout):
     inputs = keras.layers.Input(shape=input_shape)
@@ -155,14 +155,6 @@ def EarlyMergeAttention(Model_A,Model_B,Model_C,lr_schedule,METRICS):
         metrics=METRICS)
     
     return Mergemodel
-
-
-
-
-
-    return keras.Model(inputs, x)
-
-
 
 
 def Merge(Model_A,Model_B,Model_C,lr_schedule,METRICS):
