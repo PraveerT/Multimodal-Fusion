@@ -20,8 +20,14 @@ def transformer_encoder(inputs, head_size, num_heads, ff_dim, dropout=0):
     x = keras.layers.Dropout(dropout)(x)
     return x + inputs
 
-
 def A(input_shape,dropout):
+    inputs = keras.layers.Input(shape=input_shape)
+    x = inputs
+    return keras.Model(inputs, x)
+  
+    
+
+def B(input_shape,dropout):
     inputs = keras.layers.Input(shape=input_shape)
     x = inputs
     x = keras.layers.Conv3D(32, kernel_size=(3, 3, 3), activation='relu', kernel_initializer='he_uniform')(x)
@@ -35,7 +41,7 @@ def A(input_shape,dropout):
   
   
 
-def A_Attention(input_shape,dropout):
+def B_Attention(input_shape,dropout):
     inputs = keras.layers.Input(shape=input_shape)
     x = inputs
     x = keras.layers.Conv3D(32, kernel_size=(3, 3, 3), activation='relu', kernel_initializer='he_uniform')(x)
@@ -47,12 +53,10 @@ def A_Attention(input_shape,dropout):
     x = keras.layers.MaxPooling3D(pool_size=(2, 2, 2))(x)
     x = keras.layers.Reshape((-1,x.shape[-1]))(x)
     for _ in range(4):
-        x = transformer_encoder(x, 2048,16,16, 0.1)
+        x = transformer_encoder(x, 2048,16,16, 0.1)    
 
 
-    return keras.Model(inputs, x)
-
-def B(input_shape,dropout):
+def C(input_shape,dropout):
     inputs = keras.layers.Input(shape=input_shape)
     x = inputs
     x = keras.layers.Conv3D(32, kernel_size=(3, 3, 3), activation='relu', kernel_initializer='he_uniform')(x)
@@ -74,7 +78,7 @@ def B(input_shape,dropout):
 
 
 
-def B_Attention(input_shape,dropout):
+def C_Attention(input_shape,dropout):
     inputs = keras.layers.Input(shape=input_shape)
     x = inputs
     x = keras.layers.Conv3D(32, kernel_size=(3, 3, 3), activation='relu', kernel_initializer='he_uniform')(x)
@@ -93,6 +97,68 @@ def B_Attention(input_shape,dropout):
     x = keras.layers.Dense(1024, activation="relu")(x)
     x = keras.layers.Dropout(0.4)(x)
     x = keras.layers.Dense(12, activation="softmax")(x)
+
+    return keras.Model(inputs, x)
+
+
+def EarlyMerge(Model_A,Model_B,Model_C,lr_schedule,METRICS):
+    merged = keras.layers.Add(name="MERGE")([Model_A.output,Model_B.output,Model_C.output])
+    x = keras.layers.Conv3D(32, kernel_size=(3, 3, 3), activation='relu', kernel_initializer='he_uniform')(merged)
+    x = keras.layers.MaxPooling3D(pool_size=(2, 2, 2))(x)
+    x = keras.layers.Conv3D(64, kernel_size=(3, 3, 3), activation='relu', kernel_initializer='he_uniform')(x)
+    x = keras.layers.MaxPooling3D(pool_size=(2, 2, 2))(x)
+    x = keras.layers.BatchNormalization()(x)
+    x = keras.layers.Conv3D(128, kernel_size=(3, 3, 3), activation='relu', kernel_initializer='he_uniform')(x)
+    x = keras.layers.MaxPooling3D(pool_size=(2, 2, 2))(x)
+    x = keras.layers.Flatten()(x)
+    x = keras.layers.Dense(128, activation="relu")(x)
+    x = keras.layers.Dropout(0.4)(x)
+    x = keras.layers.Dense(1024, activation="relu")(x)
+    x = keras.layers.Dropout(0.4)(x)
+    x = keras.layers.Dense(12, activation="softmax")(x)
+    
+    Mergemodel = keras.Model(inputs=[Model_A.input,Model_B.input, Model_C.input], outputs=x)
+# Mergemodel.summary()
+
+    Mergemodel.compile(loss='categorical_crossentropy',
+        optimizer=tf.keras.optimizers.Adam(learning_rate=lr_schedule),
+        metrics=METRICS)
+    
+    return Mergemodel
+
+def EarlyMergeAttention(Model_A,Model_B,Model_C,lr_schedule,METRICS):
+    merged = keras.layers.Add(name="MERGE")([Model_A.output,Model_B.output,Model_C.output])
+    x = keras.layers.Conv3D(32, kernel_size=(3, 3, 3), activation='relu', kernel_initializer='he_uniform')(merged)
+    x = keras.layers.MaxPooling3D(pool_size=(2, 2, 2))(x)
+    x = keras.layers.Conv3D(64, kernel_size=(3, 3, 3), activation='relu', kernel_initializer='he_uniform')(x)
+    x = keras.layers.MaxPooling3D(pool_size=(2, 2, 2))(x)
+    x = keras.layers.BatchNormalization()(x)
+    x = keras.layers.Conv3D(128, kernel_size=(3, 3, 3), activation='relu', kernel_initializer='he_uniform')(x)
+    x = keras.layers.MaxPooling3D(pool_size=(2, 2, 2))(x)
+    x = keras.layers.Reshape((-1,x.shape[-1]))(x)
+    for _ in range(4):
+        x = transformer_encoder(x,2048,16,16, 0.1)
+    x = keras.layers.Flatten()(x)
+    x = keras.layers.Dense(128, activation="relu")(x)
+    x = keras.layers.Dropout(0.4)(x)
+    x = keras.layers.Dense(1024, activation="relu")(x)
+    x = keras.layers.Dropout(0.4)(x)
+    x = keras.layers.Dense(12, activation="softmax")(x)
+
+    return keras.Model(inputs, x)
+    
+    Mergemodel = keras.Model(inputs=[Model_A.input,Model_B.input, Model_C.input], outputs=x)
+# Mergemodel.summary()
+
+    Mergemodel.compile(loss='categorical_crossentropy',
+        optimizer=tf.keras.optimizers.Adam(learning_rate=lr_schedule),
+        metrics=METRICS)
+    
+    return Mergemodel
+
+
+
+
 
     return keras.Model(inputs, x)
 
