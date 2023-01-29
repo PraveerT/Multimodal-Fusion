@@ -144,9 +144,6 @@ def EarlyMergeIntermediateAttention(Model_A,Model_B,Model_C,lr_schedule,METRICS)
     x = keras.layers.Dense(1024, activation="relu")(x)
     x = keras.layers.Dropout(0.4)(x)
     x = keras.layers.Dense(12, activation="softmax")(x)
-
-    return keras.Model(inputs, x)
-    
     Mergemodel = keras.Model(inputs=[Model_A.input,Model_B.input, Model_C.input], outputs=x)
 # Mergemodel.summary()
 
