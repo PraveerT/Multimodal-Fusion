@@ -117,6 +117,7 @@ def Merge(Model_A,Model_B,Model_C,lr_schedule,METRICS):
     
     return Mergemodel
 
+
 def Merge_Attention(Model_A,Model_B,Model_C,lr_schedule,METRICS):
     merged = keras.layers.Concatenate(name="MERGE_ATT")([Model_A.output,Model_B.output,Model_C.output])
     merged=keras.layers.Reshape((-1,merged.shape[-1]))(merged)
