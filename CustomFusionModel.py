@@ -126,7 +126,7 @@ def EarlyMerge(Model_A,Model_B,Model_C,lr_schedule,METRICS):
     
     return Mergemodel
 
-def EarlyMergeAttention(Model_A,Model_B,Model_C,lr_schedule,METRICS):
+def EarlyMergeIntermediateAttention(Model_A,Model_B,Model_C,lr_schedule,METRICS):
     merged = keras.layers.Add(name="MERGE")([Model_A.output,Model_B.output,Model_C.output])
     x = keras.layers.Conv3D(32, kernel_size=(3, 3, 3), activation='relu', kernel_initializer='he_uniform')(merged)
     x = keras.layers.MaxPooling3D(pool_size=(2, 2, 2))(x)
@@ -155,6 +155,7 @@ def EarlyMergeAttention(Model_A,Model_B,Model_C,lr_schedule,METRICS):
         metrics=METRICS)
     
     return Mergemodel
+
 
 
 def Merge(Model_A,Model_B,Model_C,lr_schedule,METRICS):
