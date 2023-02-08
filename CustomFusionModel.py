@@ -9,7 +9,7 @@ from IPython.display import clear_output #clear_output(wait=True)
 import pickle
 import tensorflow as tf
 from numpy.random import seed
-
+from keras.layers import Attention
 
 def transformer_encoder(inputs, head_size, num_heads, ff_dim, dropout=0):
 
@@ -181,6 +181,28 @@ def Merge_Attention(Model_A,Model_B,Model_C,lr_schedule,METRICS):
     for _ in range(4):
         x = transformer_encoder(x, 2048,16,16, 0.1)
     output = keras.layers.Flatten()(x)
+    output = keras.layers.Dense(128, activation="relu",name="FD")(output)
+    output = keras.layers.Dropout(0.4)(output)
+    output = keras.layers.Dense(1024, activation="relu",name="ML3")(output)
+    output = keras.layers.Dropout(0.4)(output)
+    output = keras.layers.Dense(12, activation="softmax",name="ML4")(output)
+
+
+
+
+    MergeAttmodel = keras.Model(inputs=[Model_A.input,Model_B.input, Model_C.input], outputs=output)
+    # Mergemodel.summary()
+    MergeAttmodel.compile(loss='categorical_crossentropy',
+    optimizer=tf.keras.optimizers.Adam(learning_rate=lr_schedule),
+    metrics=METRICS)
+    
+    return MergeAttmodel
+
+def Merge_Inter_Attention_II(Model_A,Model_B,Model_C,lr_schedule,METRICS):
+    merged = keras.layers.Concatenate(name="MERGE_ATT")([Model_A.output,Model_B.output,Model_C.output])
+    attention = Attention(n_head=8, size_per_head=16)(merged)
+    attention = Lambda(lambda x: x[0] * x[1])([merged, attention])
+    output = keras.layers.Flatten()(attention)
     output = keras.layers.Dense(128, activation="relu",name="FD")(output)
     output = keras.layers.Dropout(0.4)(output)
     output = keras.layers.Dense(1024, activation="relu",name="ML3")(output)
