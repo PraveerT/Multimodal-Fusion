@@ -9,7 +9,7 @@ from IPython.display import clear_output #clear_output(wait=True)
 import pickle
 import tensorflow as tf
 from numpy.random import seed
-from keras.layers import Attention
+from keras.layers import MultiHeadAttention
 
 
 def MultiHeadAttention(n_heads, head_size, name=None):
@@ -244,9 +244,9 @@ def Merge_Attention(Model_A,Model_B,Model_C,lr_schedule,METRICS):
     
     return MergeAttmodel
 
-def Merge_Inter_Attention_II(Model_A,Model_B,Model_C,lr_schedule,METRICS):
+def Merge_late_Attention_II(Model_A,Model_B,Model_C,lr_schedule,METRICS):
     merged = keras.layers.Concatenate(name="MERGE_ATT")([Model_A.output,Model_B.output,Model_C.output])
-    attention = MultiHeadAttention(n_heads=8, head_size=16, name="attention")(merged)
+    attention = MultiHeadAttention(num_heads=2, key_dim=2)(merged)
     output = keras.layers.Flatten()(attention)
     output = keras.layers.Dense(128, activation="relu",name="FD")(output)
     output = keras.layers.Dropout(0.4)(output)
