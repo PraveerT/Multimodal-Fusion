@@ -246,6 +246,7 @@ def Merge_Attention(Model_A,Model_B,Model_C,lr_schedule,METRICS):
 
 def Merge_late_Attention_II(Model_A,Model_B,Model_C,lr_schedule,METRICS):
     merged = keras.layers.Concatenate(name="MERGE_ATT")([Model_A.output,Model_B.output,Model_C.output])
+    print (merged.shape)
     layer = MultiHeadAttention(num_heads=2, key_dim=2, attention_axes=(2, 3))
     output_tensor = layer(merged, merged)
     output = keras.layers.Flatten()(output_tensor)
