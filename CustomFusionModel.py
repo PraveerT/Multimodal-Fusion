@@ -10,6 +10,7 @@ import pickle
 import tensorflow as tf
 from numpy.random import seed
 from keras.layers import Attention
+from transformers import MultiHeadAttention
 
 def transformer_encoder(inputs, head_size, num_heads, ff_dim, dropout=0):
 
@@ -200,8 +201,7 @@ def Merge_Attention(Model_A,Model_B,Model_C,lr_schedule,METRICS):
 
 def Merge_Inter_Attention_II(Model_A,Model_B,Model_C,lr_schedule,METRICS):
     merged = keras.layers.Concatenate(name="MERGE_ATT")([Model_A.output,Model_B.output,Model_C.output])
-    attention = Attention(n_head=8, size_per_head=16)(merged)
-    attention = Lambda(lambda x: x[0] * x[1])([merged, attention])
+    attention = MultiHeadAttention(n_heads=8, head_size=16, name="attention")(merged)
     output = keras.layers.Flatten()(attention)
     output = keras.layers.Dense(128, activation="relu",name="FD")(output)
     output = keras.layers.Dropout(0.4)(output)
