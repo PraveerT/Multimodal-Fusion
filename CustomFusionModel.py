@@ -12,7 +12,7 @@ from numpy.random import seed
 from keras.layers import MultiHeadAttention
 
 
-def MultiHeadAttention(n_heads, head_size, name=None):
+def CustomMultiHeadAttention(n_heads, head_size, name=None):
     def _multi_head_attention(inputs):
         # Linear projections for queries, keys, and values
         queries = tf.keras.layers.Dense(n_heads * head_size, activation='relu')(inputs)
