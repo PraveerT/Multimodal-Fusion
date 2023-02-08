@@ -10,7 +10,52 @@ import pickle
 import tensorflow as tf
 from numpy.random import seed
 from keras.layers import Attention
-from transformers import MultiHeadAttention
+
+
+def MultiHeadAttention(n_heads, head_size, name=None):
+    def _multi_head_attention(inputs):
+        # Linear projections for queries, keys, and values
+        queries = tf.keras.layers.Dense(n_heads * head_size, activation='relu')(inputs)
+        keys = tf.keras.layers.Dense(n_heads * head_size, activation='relu')(inputs)
+        values = tf.keras.layers.Dense(n_heads * head_size, activation='relu')(inputs)
+        
+        # Reshape the queries, keys, and values
+        queries = tf.reshape(queries, (-1, tf.shape(queries)[1], n_heads, head_size))
+        keys = tf.reshape(keys, (-1, tf.shape(keys)[1], n_heads, head_size))
+        values = tf.reshape(values, (-1, tf.shape(values)[1], n_heads, head_size))
+        
+        # Transpose the queries, keys, and values for calculation of dot product
+        queries = tf.transpose(queries, [0, 2, 1, 3])
+        keys = tf.transpose(keys, [0, 2, 3, 1])
+        values = tf.transpose(values, [0, 2, 1, 3])
+        
+        # Calculate dot product between queries and keys
+        dot_product = tf.matmul(queries, keys)
+        
+        # Scale the dot product
+        dot_product = dot_product / (head_size ** 0.5)
+        
+        # Apply softmax to the dot product to obtain weights
+        weights = tf.nn.softmax(dot_product)
+        
+        # Calculate the dot product between the values and the weights to obtain the final values
+        attended_values = tf.matmul(weights, values)
+        
+        # Transpose the attended values to the original shape
+        attended_values = tf.transpose(attended_values, [0, 2, 1, 3])
+        
+        # Reshape the attended values to have a shape of (batch_size, sequence_length, n_heads * head_size)
+        attended_values = tf.reshape(attended_values, (-1, tf.shape(attended_values)[1], n_heads * head_size))
+        
+        # Apply the final linear layer to obtain the output of the multi-head attention mechanism
+        attention_output = tf.keras.layers.Dense(n_heads * head_size, activation='relu')(attended_values)
+        
+        return attention_output
+    
+    return tf.keras.layers.Lambda(
+        _multi_head_attention, 
+        name=name if name is not None else f"multi_head_attention_{n_heads}_{head_size}"
+    )
 
 def transformer_encoder(inputs, head_size, num_heads, ff_dim, dropout=0):
 
