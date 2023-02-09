@@ -14,6 +14,11 @@ from numpy.random import seed
 from keras.layers import MultiHeadAttention
 
 
+from keras.layers import Input, Dense, Flatten, LayerNormalization, Dropout
+from keras.layers import Conv3D, MaxPooling3D, GlobalAveragePooling1D
+from keras.models import Model
+from keras_transformer import MultiHeadSelfAttention, PositionEmbedding
+
 from keras.layers import Layer, Dropout, LayerNormalization
 
 class Transformer(Layer):
