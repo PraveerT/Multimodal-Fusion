@@ -199,7 +199,7 @@ def C_Attention(input_shape,dropout):
     x = keras.layers.MaxPooling3D(pool_size=(2, 2, 2))(x)
     x = keras.layers.Dropout(0.5)(x)
     x = keras.layers.Flatten()(x)
-    x = Transformer(num_heads=8, units=64, activation='relu')(x)
+    x = Transformer(num_heads=8, units=64, activation='relu',dropout=0.5)(x)
     x = keras.layers.GlobalAveragePooling1D(data_format="channels_first")(x)
     x = keras.layers.Flatten()(x)
     x = keras.layers.Dense(128, activation="relu")(x)
