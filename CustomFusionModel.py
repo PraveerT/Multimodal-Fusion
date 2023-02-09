@@ -68,6 +68,7 @@ def transformer_encoder(inputs, head_size, num_heads, ff_dim, dropout=0):
     x = keras.layers.Dropout(dropout)(x)
     return x + inputs
 
+
 def A(input_shape,dropout):
     inputs = keras.layers.Input(shape=input_shape)
     x = inputs
@@ -99,7 +100,7 @@ def B_Attention(input_shape,dropout):
     x = keras.layers.BatchNormalization()(x)
     x = keras.layers.Conv3D(128, kernel_size=(3, 3, 3), activation='relu', kernel_initializer='he_uniform')(x)
     x = keras.layers.MaxPooling3D(pool_size=(2, 2, 2))(x)
-    x = keras.layers.Reshape((-1,x.shape[-1]))(x)
+    x = keras.layers.Flatten()(x)
     for _ in range(4):
         x = transformer_encoder(x, 2048,16,16, 0.1)    
     return keras.Model(inputs, x)
@@ -136,10 +137,10 @@ def C_Attention(input_shape,dropout):
     x = keras.layers.BatchNormalization()(x)
     x = keras.layers.Conv3D(128, kernel_size=(3, 3, 3), activation='relu', kernel_initializer='he_uniform')(x)
     x = keras.layers.MaxPooling3D(pool_size=(2, 2, 2))(x)
-    x = keras.layers.Reshape((-1,x.shape[-1]))(x)
+    x = keras.layers.Flatten()(x)
     for _ in range(4):
         x = transformer_encoder(x,2048,16,16, 0.1)
-    x = keras.layers.Flatten()(x)
+    x = keras.layers.Flatten()(x)     
     x = keras.layers.Dense(128, activation="relu")(x)
     x = keras.layers.Dropout(0.4)(x)
     x = keras.layers.Dense(1024, activation="relu")(x)
@@ -183,7 +184,7 @@ def EarlyMergeIntermediateAttention(Model_A,Model_B,Model_C,lr_schedule,METRICS)
     x = keras.layers.BatchNormalization()(x)
     x = keras.layers.Conv3D(128, kernel_size=(3, 3, 3), activation='relu', kernel_initializer='he_uniform')(x)
     x = keras.layers.MaxPooling3D(pool_size=(2, 2, 2))(x)
-    x = keras.layers.Reshape((-1,x.shape[-1]))(x)
+    x = keras.layers.Flatten()(x)
     for _ in range(4):
         x = transformer_encoder(x,2048,16,16, 0.1)
     x = keras.layers.Flatten()(x)
@@ -224,8 +225,7 @@ def Merge(Model_A,Model_B,Model_C,lr_schedule,METRICS):
 
 def Merge_Attention(Model_A,Model_B,Model_C,lr_schedule,METRICS):
     merged = keras.layers.Concatenate(name="MERGE_ATT")([Model_A.output,Model_B.output,Model_C.output])
-    merged=keras.layers.Reshape((-1,merged.shape[-1]))(merged)
-    x=merged
+    x = keras.layers.Flatten()(merged)
     for _ in range(4):
         x = transformer_encoder(x, 2048,16,16, 0.1)
     output = keras.layers.Flatten()(x)
