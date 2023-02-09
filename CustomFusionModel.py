@@ -118,7 +118,7 @@ def transformer_encoder(inputs, head_size, num_heads, ff_dim, dropout=0):
     x = keras.layers.MultiHeadAttention(
         key_dim=head_size, num_heads=num_heads, dropout=dropout
     )(x, x)
-    x = keras.layers.Dropout(dropout)(x)
+    x = layers.Dropout(dropout)(x)
     res = x + inputs
 
     # Feed Forward Part
