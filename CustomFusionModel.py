@@ -92,6 +92,7 @@ def B(input_shape,dropout):
     x = keras.layers.BatchNormalization()(x)
     x = keras.layers.Conv3D(128, kernel_size=(3, 3, 3), activation='relu', kernel_initializer='he_uniform')(x)
     x = keras.layers.MaxPooling3D(pool_size=(2, 2, 2))(x)
+    x = keras.layers.GlobalAveragePooling1D(data_format="channels_first")(x)
     return keras.Model(inputs, x)
   
   
@@ -99,16 +100,18 @@ def B(input_shape,dropout):
 def B_Attention(input_shape,dropout):
     inputs = keras.layers.Input(shape=input_shape)
     x = inputs
+    x = keras.layers.LayerNormalization(epsilon=1e-6)(res)
     x = keras.layers.Conv3D(32, kernel_size=(3, 3, 3), activation='relu', kernel_initializer='he_uniform')(x)
     x = keras.layers.MaxPooling3D(pool_size=(2, 2, 2))(x)
+    x = keras.layers.LayerNormalization()(x)
     x = keras.layers.Conv3D(64, kernel_size=(3, 3, 3), activation='relu', kernel_initializer='he_uniform')(x)
     x = keras.layers.MaxPooling3D(pool_size=(2, 2, 2))(x)
-    x = keras.layers.BatchNormalization()(x)
+    x = keras.layers.LayerNormalization()(x)
     x = keras.layers.Conv3D(128, kernel_size=(3, 3, 3), activation='relu', kernel_initializer='he_uniform')(x)
     x = keras.layers.MaxPooling3D(pool_size=(2, 2, 2))(x)
-    x = keras.layers.Reshape((-1,x.shape[-1]))(x)
-    for _ in range(4):
-        x = transformer_encoder(x, 2048,16,16, 0.1)    
+    x = keras.layers.Dropout(0.5)(x)
+    x = keras.layers.Flatten()(x)
+    x = keras.layers.Transformer(num_heads=8, units=64, activation='relu')(x)
     x = keras.layers.GlobalAveragePooling1D(data_format="channels_first")(x)
     return keras.Model(inputs, x)
 
