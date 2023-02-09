@@ -202,11 +202,14 @@ def C_Attention(input_shape,dropout):
     x = keras.layers.LayerNormalization()(x)
     x = keras.layers.Conv3D(128, kernel_size=(3, 3, 3), activation='relu', kernel_initializer='he_uniform')(x)
     x = keras.layers.MaxPooling3D(pool_size=(2, 2, 2))(x)
-    x = keras.layers.Dropout(0.5)(x)
     x = keras.layers.Flatten()(x)
-    x = Transformer(num_heads=8, units=64, activation='relu',dropout=0.5)(x)
-    x = keras.layers.GlobalAveragePooling1D(data_format="channels_first")(x)
-    x = keras.layers.Flatten()(x)
+    x = MultiHeadSelfAttention(head_num=8, name='Self-Attention')(x)
+    # Layer normalization
+    x = LayerNormalization(epsilon=1e-6)(x)
+    # Dropout
+    x = Dropout(0.5)(x)
+    # Global Average Pooling1D
+    x = GlobalAveragePooling1D()(x)
     x = keras.layers.Dense(128, activation="relu")(x)
     x = keras.layers.Dropout(0.4)(x)
     x = keras.layers.Dense(1024, activation="relu")(x)
