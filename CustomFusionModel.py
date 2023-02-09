@@ -14,59 +14,6 @@ from numpy.random import seed
 from keras.layers import MultiHeadAttention
 
 
-from keras.layers import Input, Dense, Flatten, LayerNormalization, Dropout
-from keras.layers import Conv3D, MaxPooling3D, GlobalAveragePooling1D
-from keras.models import Model
-from keras_transformer import MultiHeadSelfAttention, PositionEmbedding
-
-from keras.layers import Layer, Dropout, LayerNormalization
-
-class Transformer(Layer):
-    def __init__(self, num_heads, units, activation, dropout, **kwargs):
-        self.num_heads = num_heads
-        self.units = units
-        self.activation = keras.activations.get(activation)
-        self.dropout = Dropout(dropout)
-        super(Transformer, self).__init__(**kwargs)
-
-    def build(self, input_shape):
-        dim = input_shape[-1]
-        self.q_dense = keras.layers.Dense(self.units, activation=self.activation)
-        self.k_dense = keras.layers.Dense(self.units, activation=self.activation)
-        self.v_dense = keras.layers.Dense(self.units, activation=self.activation)
-        self.out_dense = keras.layers.Dense(dim, activation=self.activation)
-        super(Transformer, self).build(input_shape)
-
-    def get_config(self):
-        config = {
-            'num_heads': self.num_heads,
-            'units': self.units,
-            'activation': keras.activations.serialize(self.activation),
-            'dropout': self.dropout
-        }
-        base_config = super(Transformer, self).get_config()
-        return dict(list(base_config.items()) + list(config.items()))
-
-    def call(self, inputs):
-        q = self.q_dense(inputs)
-        k = self.k_dense(inputs)
-        v = self.v_dense(inputs)
-        dim = self.units
-        heads = self.num_heads
-        batch_size, seq_len, dim = inputs.shape
-        depth = dim // heads
-        q *= depth ** -0.5
-        x = keras.backend.batch_dot(q, k, axes=[2, 2])
-        x = keras.backend.softmax(x)
-        x = self.dropout(x)
-        x = keras.backend.batch_dot(x, v)
-        x = keras.backend.permute_dimensions(x, (0, 2, 1, 3))
-        x = keras.backend.reshape(x, (batch_size, seq_len, dim))
-        x = self.out_dense(x)
-        x = LayerNormalization()(x)
-        return x
-
-
 def CustomMultiHeadAttention(n_heads, head_size, name=None):
     def _multi_head_attention(inputs):
         # Linear projections for queries, keys, and values
@@ -118,7 +65,7 @@ def transformer_encoder(inputs, head_size, num_heads, ff_dim, dropout=0):
     x = keras.layers.MultiHeadAttention(
         key_dim=head_size, num_heads=num_heads, dropout=dropout
     )(x, x)
-    x = layers.Dropout(dropout)(x)
+    x = keras.layers.Dropout(dropout)(x)
     res = x + inputs
 
     # Feed Forward Part
@@ -152,10 +99,6 @@ def B(input_shape,dropout):
 def B_Attention(input_shape,dropout):
     inputs = keras.layers.Input(shape=input_shape)
     x = inputs
-<<<<<<< HEAD
-=======
-    x = keras.layers.LayerNormalization(epsilon=1e-6)(res)
->>>>>>> parent of a7a6df3 (C again)
     x = keras.layers.Conv3D(32, kernel_size=(3, 3, 3), activation='relu', kernel_initializer='he_uniform')(x)
     x = keras.layers.MaxPooling3D(pool_size=(2, 2, 2))(x)
     x = keras.layers.Conv3D(64, kernel_size=(3, 3, 3), activation='relu', kernel_initializer='he_uniform')(x)
@@ -194,23 +137,18 @@ def C(input_shape,dropout):
 def C_Attention(input_shape,dropout):
     inputs = keras.layers.Input(shape=input_shape)
     x = inputs
-    x = keras.layers.LayerNormalization(epsilon=1e-6)(res)
     x = keras.layers.Conv3D(32, kernel_size=(3, 3, 3), activation='relu', kernel_initializer='he_uniform')(x)
     x = keras.layers.MaxPooling3D(pool_size=(2, 2, 2))(x)
-    x = keras.layers.LayerNormalization()(x)
     x = keras.layers.Conv3D(64, kernel_size=(3, 3, 3), activation='relu', kernel_initializer='he_uniform')(x)
     x = keras.layers.MaxPooling3D(pool_size=(2, 2, 2))(x)
-    x = keras.layers.LayerNormalization()(x)
+    x = keras.layers.BatchNormalization()(x)
     x = keras.layers.Conv3D(128, kernel_size=(3, 3, 3), activation='relu', kernel_initializer='he_uniform')(x)
     x = keras.layers.MaxPooling3D(pool_size=(2, 2, 2))(x)
+    x = keras.layers.Reshape((-1,x.shape[-1]))(x)
+    for _ in range(4):
+        x = transformer_encoder(x,2048,16,16, 0.1)
+    x = keras.layers.GlobalAveragePooling1D(data_format="channels_first")(x)
     x = keras.layers.Flatten()(x)
-    x = MultiHeadSelfAttention(head_num=8, name='Self-Attention')(x)
-    # Layer normalization
-    x = LayerNormalization(epsilon=1e-6)(x)
-    # Dropout
-    x = Dropout(0.5)(x)
-    # Global Average Pooling1D
-    x = GlobalAveragePooling1D()(x)
     x = keras.layers.Dense(128, activation="relu")(x)
     x = keras.layers.Dropout(0.4)(x)
     x = keras.layers.Dense(1024, activation="relu")(x)
