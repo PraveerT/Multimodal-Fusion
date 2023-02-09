@@ -101,8 +101,10 @@ def B_Attention(input_shape,dropout):
     x = keras.layers.Conv3D(128, kernel_size=(3, 3, 3), activation='relu', kernel_initializer='he_uniform')(x)
     x = keras.layers.MaxPooling3D(pool_size=(2, 2, 2))(x)
     x = keras.layers.Flatten()(x)
+    layer = MultiHeadAttention(num_heads=2, key_dim=2)
     for _ in range(4):
-        x = transformer_encoder(x, 2048,16,16, 0.1)    
+        x = layer(x, x)
+        x = keras.layers.Flatten()(output_tensor) 
     return keras.Model(inputs, x)
 
 def C(input_shape,dropout):
