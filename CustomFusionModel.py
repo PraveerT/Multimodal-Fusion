@@ -109,7 +109,7 @@ def B_Attention(input_shape,dropout):
     x = keras.layers.MaxPooling3D(pool_size=(2, 2, 2))(x)
     x = keras.layers.Reshape((-1,x.shape[-1]))(x)
     for _ in range(4):
-        x = transformer_encoder(x, 1024,16,16, 0.1)    
+        x = transformer_encoder(x, 2048,16,16, 0.1)    
     x = keras.layers.GlobalAveragePooling1D(data_format="channels_first")(x)
     return keras.Model(inputs, x)
 
@@ -129,6 +129,7 @@ def C(input_shape,dropout):
     x = keras.layers.Dense(1024, activation="relu")(x)
     x = keras.layers.Dropout(0.4)(x)
     x = keras.layers.Dense(12, activation="softmax")(x)
+
     return keras.Model(inputs, x)
 
 
@@ -146,7 +147,7 @@ def C_Attention(input_shape,dropout):
     x = keras.layers.MaxPooling3D(pool_size=(2, 2, 2))(x)
     x = keras.layers.Reshape((-1,x.shape[-1]))(x)
     for _ in range(4):
-        x = transformer_encoder(x,1024,16,16, 0.1)
+        x = transformer_encoder(x,2048,16,16, 0.1)
     x = keras.layers.GlobalAveragePooling1D(data_format="channels_first")(x)
     x = keras.layers.Dense(128, activation="relu")(x)
     x = keras.layers.Dropout(0.4)(x)
@@ -193,7 +194,7 @@ def EarlyMergeIntermediateAttention(Model_A,Model_B,Model_C,lr_schedule,METRICS)
     x = keras.layers.MaxPooling3D(pool_size=(2, 2, 2))(x)
     x = keras.layers.Reshape((-1,x.shape[-1]))(x)
     for _ in range(4):
-        x = transformer_encoder(x,1024,16,16, 0.1)
+        x = transformer_encoder(x,2048,16,16, 0.1)
     x = keras.layers.GlobalAveragePooling1D(data_format="channels_first")(x)
     x = keras.layers.Dense(128, activation="relu")(x)
     x = keras.layers.Dropout(0.4)(x)
@@ -235,7 +236,7 @@ def Merge_Attention(Model_A,Model_B,Model_C,lr_schedule,METRICS):
     merged=keras.layers.Reshape((-1,merged.shape[-1]))(merged)
     x=merged
     for _ in range(4):
-        x = transformer_encoder(x, 1024,16,16, 0.1)
+        x = transformer_encoder(x, 128,4,4, 0.1)
     x = keras.layers.GlobalAveragePooling1D(data_format="channels_first")(x)
     output = keras.layers.Dense(128, activation="relu",name="FD")(x)
     output = keras.layers.Dropout(0.4)(output)
