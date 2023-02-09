@@ -152,6 +152,10 @@ def B(input_shape,dropout):
 def B_Attention(input_shape,dropout):
     inputs = keras.layers.Input(shape=input_shape)
     x = inputs
+<<<<<<< HEAD
+=======
+    x = keras.layers.LayerNormalization(epsilon=1e-6)(res)
+>>>>>>> parent of a7a6df3 (C again)
     x = keras.layers.Conv3D(32, kernel_size=(3, 3, 3), activation='relu', kernel_initializer='he_uniform')(x)
     x = keras.layers.MaxPooling3D(pool_size=(2, 2, 2))(x)
     x = keras.layers.Conv3D(64, kernel_size=(3, 3, 3), activation='relu', kernel_initializer='he_uniform')(x)
