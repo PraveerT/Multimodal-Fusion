@@ -67,13 +67,14 @@ def transformer_encoder(inputs, head_size, num_heads, ff_dim, dropout=0):
     )(x, x)
     x = keras.layers.Dropout(dropout)(x)
     res = x + inputs
+    return res
 
     # Feed Forward Part
-    x = keras.layers.LayerNormalization(epsilon=1e-6)(res)
-    x = keras.layers.Conv1D(filters=ff_dim, kernel_size=1, activation="relu")(x)
-    x = keras.layers.Dropout(dropout)(x)
-    x = keras.layers.Conv1D(filters=inputs.shape[-1], kernel_size=1)(x)
-    return x + res
+#     x = keras.layers.LayerNormalization(epsilon=1e-6)(res)
+#     x = keras.layers.Conv1D(filters=ff_dim, kernel_size=1, activation="relu")(x)
+#     x = keras.layers.Dropout(dropout)(x)
+#     x = keras.layers.Conv1D(filters=inputs.shape[-1], kernel_size=1)(x)
+#     return x + res
 
 def A(input_shape,dropout):
     inputs = keras.layers.Input(shape=input_shape)
